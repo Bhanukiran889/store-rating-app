@@ -1,9 +1,9 @@
 // backend/config/db.js
 
-const mysql = require('mysql2/promise'); // Using the promise-based API for async/await
+const mysql = require('mysql2/promise'); 
 const dotenv = require('dotenv');
 
-dotenv.config(); // Ensure environment variables are loaded
+dotenv.config(); 
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -12,7 +12,7 @@ const pool = mysql.createPool({
     database: process.env.DB_DATABASE,
     port: process.env.DB_PORT,
     waitForConnections: true,
-    connectionLimit: 10, // Max number of connections in the pool
+    connectionLimit: 10, 
     queueLimit: 0
 });
 
