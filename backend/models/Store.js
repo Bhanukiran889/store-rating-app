@@ -100,27 +100,89 @@ Store.delete = async (id) => {
 };
 
 
-// Get all stores with their average ratings
-Store.findAllWithRatings = async () => {
-    const query = `
-        SELECT s.id, s.name, s.email, s.address, s.owner_id, s.created_at, s.updated_at,
-               u.name AS owner_name, u.email AS owner_email,
-               AVG(r.rating) AS average_rating, COUNT(r.id) AS rating_count
+// Get all stores with their average ratings, with pagination, filtering, and sorting
+Store.findAllWithAvgRating = async (page = 1, limit = 10, searchQuery = '', sortBy = 'name', sortOrder = 'ASC') => {
+    const offset = (page - 1) * limit;
+
+    // Base query for average rating
+    let baseQuery = `
+        SELECT
+            s.id,
+            s.name,
+            s.email,
+            s.address,
+            s.owner_id,
+            s.created_at,
+            s.updated_at,
+            u.name AS owner_name,
+            u.email AS owner_email,
+            COALESCE(AVG(r.rating), 0) AS average_rating,
+            COUNT(r.id) AS total_ratings
         FROM stores s
         LEFT JOIN users u ON s.owner_id = u.id
         LEFT JOIN ratings r ON s.id = r.store_id
+    `;
+
+    let countQuery = `
+        SELECT COUNT(DISTINCT s.id) AS total_count
+        FROM stores s
+        LEFT JOIN users u ON s.owner_id = u.id
+        LEFT JOIN ratings r ON s.id = r.store_id
+    `;
+
+    const queryParams = [];
+    const countQueryParams = [];
+
+    // Add search filter
+    if (searchQuery) {
+        const searchPattern = `%${searchQuery}%`;
+        baseQuery += `
+            WHERE s.name LIKE ? OR s.address LIKE ?
+        `;
+        countQuery += `
+            WHERE s.name LIKE ? OR s.address LIKE ?
+        `;
+        queryParams.push(searchPattern, searchPattern);
+        countQueryParams.push(searchPattern, searchPattern);
+    }
+
+    // Grouping is always needed for AVG and COUNT
+    baseQuery += `
         GROUP BY s.id
     `;
-    
- try {
-        const [rows] = await db.query(query);
+    // No GROUP BY for countQuery as we just need total distinct stores
+
+    // Add sorting
+    const validSortBy = ['name', 'average_rating', 'created_at', 'total_ratings'];
+    const finalSortBy = validSortBy.includes(sortBy) ? sortBy : 'name';
+    const finalSortOrder = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
+    baseQuery += `
+        ORDER BY ${finalSortBy} ${finalSortOrder}
+        LIMIT ? OFFSET ?
+    `;
+    queryParams.push(limit, offset);
+
+    try {
+        const [stores] = await db.query(baseQuery, queryParams);
+        const [countResult] = await db.query(countQuery, countQueryParams);
+        const total = countResult[0].total_count;
+
         // Convert average_rating to a number with 2 decimal places
-        return rows.map(row => ({
+        const formattedStores = stores.map(row => ({
             ...row,
             average_rating: parseFloat(parseFloat(row.average_rating).toFixed(2))
         }));
+
+        return {
+            stores: formattedStores,
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(total / limit)
+        };
     } catch (error) {
-        console.error('Error fetching all stores with average ratings:', error.message);
+        console.error('Error fetching all stores with average ratings, filtered and paginated:', error.message);
         throw error;
     }
 };

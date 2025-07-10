@@ -5,6 +5,44 @@ const Store = require('../models/Store'); // Import the Store model
 const { protect, authorize } = require('../middleware/authMiddleware'); // Import auth middleware
 const router = express.Router();
 
+
+
+// @route   GET /api/stores
+// @desc    Get all stores
+// @access  Public
+
+router.get('/', async (req, res) => {
+    try {
+        const stores = await Store.findAll();
+        res.status(200).json(stores);
+    } catch (error) {
+        console.error('Error fetching stores:', error);
+        res.status(500).json({ message: 'Server error fetching stores.' });
+    }
+});
+
+
+// @route   GET /api/stores/with-ratings
+// @desc    Get all stores with their average ratings and total number of ratings
+// @access  Public
+router.get('/with-ratings', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchQuery = req.query.search || '';
+    const sortBy = req.query.sortBy || 'name'; // Default sort by name
+    const sortOrder = req.query.order || 'ASC'; // Default order ascending
+
+    try {
+        const result = await Store.findAllWithAvgRating(page, limit, searchQuery, sortBy, sortOrder);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error fetching paginated/filtered stores:', error);
+        res.status(500).json({ message: 'Server error fetching stores with average ratings.' });
+    }
+});
+
+
+
 // @route   POST /api/stores
 // @desc    Create a new store (only for Store Owners)
 // @access  Private (Store Owner)
@@ -31,6 +69,8 @@ router.post('/', protect, authorize('Store Owner'), async (req, res) => {
     }
 });
 
+
+
 // @route   GET /api/stores
 // @desc    Get all stores
 // @access  Public
@@ -43,6 +83,9 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Server error fetching stores.' });
     }
 });
+
+
+
 
 // @route   GET /api/stores/:id
 // @desc    Get a single store by ID
@@ -124,5 +167,8 @@ router.delete('/:id', protect, authorize(['Store Owner', 'System Administrator']
         res.status(500).json({ message: 'Server error deleting store.' });
     }
 });
+
+
+
 
 module.exports = router;
