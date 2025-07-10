@@ -1,40 +1,45 @@
-# Roxiler Systems Store Rating Application (Frontend)
+# Roxiler Systems Store Rating Application (Backend)
 
 ## Project Overview
 
-This is the frontend component of the Roxiler Systems Store Rating Application. It's built with React.js, providing the user interface for interacting with the backend API to manage users, stores, and ratings.
+This is the backend component of the Roxiler Systems Store Rating Application. It's built with Node.js and Express.js, using MySQL as the database. The backend is responsible for handling all business logic, data storage, and API endpoints, starting with user authentication and authorization.
 
-## Technologies Used (Frontend)
+## Technologies Used (Backend)
 
-* **React.js**: JavaScript library for building user interfaces.
-* **Vite**: Next-generation frontend tooling for fast development.
-* **npm / Yarn**: Package manager.
-* **Axios** (Planned): For making HTTP requests to the backend API.
+* Node.js
+* Express.js
+* MySQL Database
+* `mysql2` (MySQL client for Node.js)
+* `dotenv` (for environment variables)
+* `cors` (for Cross-Origin Resource Sharing)
+* `body-parser` (for parsing request bodies)
+* `bcryptjs` (for password hashing)
+* `jsonwebtoken` (for JWT authentication)
+* `uuid` (for generating UUIDs)
+* `nodemon` (development utility)
 
-## Setup and Local Development (Frontend)
+## Setup and Local Development (Backend)
 
-Follow these steps to set up and run the frontend locally.
+Follow these steps to get the backend up and running on your local machine.
 
 ### Prerequisites
 
-* Node.js (v14 or higher recommended) and npm (or Yarn)
-* Ensure the [Backend server is running](link-to-backend-readme-section-if-available).
+Before you begin, ensure you have the following installed:
 
-### 1. Clone the Repository (if applicable)
+* **Node.js**: Version 14 or higher is recommended.
+* **npm**: Node Package Manager, which comes with Node.js.
+* **MySQL Server**: A running instance of MySQL database.
 
-If you haven't already, clone this repository (assuming the frontend is in a `frontend` subdirectory):
+### 1. Project Initialization
+
+If you're starting from scratch, create your project structure:
 
 ```bash
-git clone <your-repository-url>
-cd store-rating-app/frontend
-```
-## 2. Install Dependencies
-Navigate into the backend directory and install all required Node.js packages:
- 
-
-```bash 
+mkdir store-rating-app
+cd store-rating-app
+mkdir backend
 cd backend
-npm install
+npm init -y
 ```
 ## 3. Database Setup
 Ensure your MySQL server is running.
