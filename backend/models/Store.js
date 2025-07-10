@@ -1,5 +1,6 @@
 // backend/models/Store.js
 
+const { parse } = require('dotenv');
 const db = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 
@@ -94,6 +95,32 @@ Store.delete = async (id) => {
         return result.affectedRows > 0; // True if deleted, false otherwise
     } catch (error) {
         console.error('Error deleting store:', error.message);
+        throw error;
+    }
+};
+
+
+// Get all stores with their average ratings
+Store.findAllWithRatings = async () => {
+    const query = `
+        SELECT s.id, s.name, s.email, s.address, s.owner_id, s.created_at, s.updated_at,
+               u.name AS owner_name, u.email AS owner_email,
+               AVG(r.rating) AS average_rating, COUNT(r.id) AS rating_count
+        FROM stores s
+        LEFT JOIN users u ON s.owner_id = u.id
+        LEFT JOIN ratings r ON s.id = r.store_id
+        GROUP BY s.id
+    `;
+    
+ try {
+        const [rows] = await db.query(query);
+        // Convert average_rating to a number with 2 decimal places
+        return rows.map(row => ({
+            ...row,
+            average_rating: parseFloat(parseFloat(row.average_rating).toFixed(2))
+        }));
+    } catch (error) {
+        console.error('Error fetching all stores with average ratings:', error.message);
         throw error;
     }
 };

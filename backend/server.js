@@ -8,6 +8,7 @@ const db = require('./config/db'); // Database connection
 
 const authRoutes = require('./routes/authRoutes'); 
 const storeRoutes = require('./routes/storeRoutes'); // Import store routes
+const ratingRoutes = require('./routes/ratingRoutes'); // Import rating routes
 
 const { protect, authorize } = require('./middleware/authMiddleware'); 
 // Load environment variables from .env file
@@ -26,30 +27,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/stores', protect,storeRoutes); 
 
-// TEMPORARY PROTECTED ROUTE - REMOVE LATER!
-app.get('/api/protected', protect, (req, res) => {
-    res.json({
-        message: 'You accessed a protected route!',
-        user: req.user // This will contain user data from the token
-    });
-});
-
-// TEMPORARY ROLE-SPECIFIC ROUTE - REMOVE LATER!
-app.get('/api/admin-only', protect, authorize('System Administrator'), (req, res) => {
-    res.json({
-        message: 'Welcome, System Administrator!',
-        user: req.user
-    });
-});
-
-// TEMPORARY MULTI-ROLE ROUTE - REMOVE LATER!
-app.get('/api/owner-or-admin', protect, authorize(['Store Owner', 'System Administrator']), (req, res) => {
-    res.json({
-        message: 'Welcome, Store Owner or System Administrator!',
-        user: req.user
-    });
-});
-
+app.use('/api/ratings', protect, ratingRoutes); // Use rating routes with authentication
 
 // Use authentication routes
 app.use('/api/auth', authRoutes); // all routes in authRoutes will be prefixed with /api/auth
