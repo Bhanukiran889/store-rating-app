@@ -5,7 +5,10 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const db = require('./config/db'); // Database connection
+
 const authRoutes = require('./routes/authRoutes'); 
+const storeRoutes = require('./routes/storeRoutes'); // Import store routes
+
 const { protect, authorize } = require('./middleware/authMiddleware'); 
 // Load environment variables from .env file
 dotenv.config();
@@ -20,6 +23,8 @@ app.use(bodyParser.json());
 app.get('/', (req, res) => {
     res.send('Roxiler Systems Backend is Running!');
 });
+
+app.use('/api/stores', protect,storeRoutes); 
 
 // TEMPORARY PROTECTED ROUTE - REMOVE LATER!
 app.get('/api/protected', protect, (req, res) => {
