@@ -1,108 +1,101 @@
 // backend/routes/authRoutes.js
 
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Import the User model
+const { body, validationResult } = require('express-validator'); // <--- ADD THIS LINE
+const User = require('../models/User');
+const generateToken = require('../utils/generateToken');
+const bcrypt = require('bcryptjs'); // For login password comparison
+const ApiError = require('../utils/ApiError'); // For custom errors
 const router = express.Router();
-
-// Utility function to generate a JWT token
-const generateToken = (user) => {
-    return jwt.sign(
-        { id: user.id, role: user.role }, // Payload: user ID and role
-        process.env.JWT_SECRET,          // Secret key from .env
-        { expiresIn: process.env.JWT_EXPIRES_IN } // Token expiration
-    );
-};
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', async (req, res) => {
-    const { name, email, password, address, role } = req.body;
-
-    // Basic validation (more robust validation will be added later)
-    if (!name || !email || !password || !address || !role) {
-        return res.status(400).json({ message: 'Please enter all required fields.' });
-    }
-    if (!['System Administrator', 'Normal User', 'Store Owner'].includes(role)) {
-        return res.status(400).json({ message: 'Invalid user role.' });
-    }
-
-    try {
-        // Check if user with this email already exists
-        const existingUser = await User.findByEmail(email);
-        if (existingUser) {
-            return res.status(400).json({ message: 'User with this email already exists.' });
+router.post(
+    '/register',
+    [
+        // Validation rules
+        body('name').trim().notEmpty().withMessage('Name is required.'),
+        body('email').isEmail().withMessage('Please enter a valid email address.').normalizeEmail(),
+        body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long.'),
+        body('address').trim().notEmpty().withMessage('Address is required.'),
+        body('role')
+            .isIn(['System Administrator', 'Normal User', 'Store Owner'])
+            .withMessage('Invalid user role. Must be System Administrator, Normal User, or Store Owner.'),
+    ],
+    async (req, res, next) => {
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Map errors to a more readable format for ApiError
+            const formattedErrors = errors.array().map(err => ({ field: err.path, message: err.msg }));
+            return next(new ApiError(400, 'Validation failed', formattedErrors));
         }
 
-        // Create new user
-        const newUser = await User.create(name, email, password, address, role);
+        const { name, email, password, address, role } = req.body;
 
-        // Generate JWT token for the new user
-        const token = generateToken(newUser);
-
-        res.status(201).json({
-            message: 'User registered successfully',
-            token,
-            user: {
-                id: newUser.id,
-                name: newUser.name,
-                email: newUser.email,
-                role: newUser.role
+        try {
+            const existingUser = await User.findByEmail(email);
+            if (existingUser) {
+                return next(new ApiError(400, 'User with this email already exists.'));
             }
-        });
 
-    } catch (error) {
-        console.error('Registration error:', error);
-        if (error.message === 'Email already registered.') { // Handle specific error from User.create
-            return res.status(400).json({ message: error.message });
+            const newUser = await User.create(name, email, password, address, role);
+            const token = generateToken(newUser);
+
+            res.status(201).json({
+                message: 'User registered successfully',
+                token,
+                user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role }
+            });
+
+        } catch (error) {
+            // The centralized errorHandler will handle specific database errors (e.g., ER_DUP_ENTRY for email)
+            next(error);
         }
-        res.status(500).json({ message: 'Server error during registration.' });
     }
-});
+);
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    // Basic validation
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Please enter all fields.' });
-    }
-
-    try {
-        // Find user by email
-        const user = await User.findByEmail(email);
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials.' });
+router.post(
+    '/login',
+    [
+        body('email').isEmail().withMessage('Please enter a valid email address.'),
+        body('password').notEmpty().withMessage('Password is required.'),
+    ],
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const formattedErrors = errors.array().map(err => ({ field: err.path, message: err.msg }));
+            return next(new ApiError(400, 'Validation failed', formattedErrors));
         }
 
-        // Compare provided password with hashed password
-        const isMatch = await User.comparePassword(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials.' });
-        }
+        const { email, password } = req.body;
 
-        // Generate JWT token
-        const token = generateToken(user);
-
-        res.json({
-            message: 'Logged in successfully',
-            token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
+        try {
+            const user = await User.findByEmail(email);
+            if (!user) {
+                return next(new ApiError(400, 'Invalid credentials.'));
             }
-        });
 
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'Server error during login.' });
+            const isMatch = await User.comparePassword(password, user.password);
+            if (!isMatch) {
+                return next(new ApiError(400, 'Invalid credentials.'));
+            }
+
+            const token = generateToken(user);
+            res.status(200).json({
+                message: 'Logged in successfully',
+                token,
+                user: { id: user.id, name: user.name, email: user.email, role: user.role }
+            });
+
+        } catch (error) {
+            next(error);
+        }
     }
-});
+);
 
 module.exports = router;

@@ -4,13 +4,15 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const db = require('./config/db'); // Database connection
+const db = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const storeRoutes = require('./routes/storeRoutes');
+const ratingRoutes = require('./routes/ratingRoutes');
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const errorHandler = require('./middleware/errorHandler');
+const ApiError = require('./utils/ApiError'); // Keep this import for the new 404 handler
 
-const authRoutes = require('./routes/authRoutes'); 
-const storeRoutes = require('./routes/storeRoutes'); // Import store routes
-const ratingRoutes = require('./routes/ratingRoutes'); // Import rating routes
-
-const { protect, authorize } = require('./middleware/authMiddleware'); 
 // Load environment variables from .env file
 dotenv.config();
 
@@ -20,17 +22,28 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Basic route for testing server
 app.get('/', (req, res) => {
     res.send('Roxiler Systems Backend is Running!');
 });
 
-app.use('/api/stores', protect,storeRoutes); 
-
-app.use('/api/ratings', protect, ratingRoutes); // Use rating routes with authentication
-
 // Use authentication routes
-app.use('/api/auth', authRoutes); // all routes in authRoutes will be prefixed with /api/auth
+app.use('/api/auth', authRoutes);
+// Use store routes
+app.use('/api/stores', storeRoutes);
+// Use rating routes
+app.use('/api/ratings', ratingRoutes);
+// Use user profile routes
+app.use('/api/users', userRoutes);
+// Use admin routes
+app.use('/api/admin', adminRoutes);
+
+// 404 Not Found Handler (MUST BE AFTER ALL ROUTES)
+app.use((req, res, next) => {
+    next(new ApiError(404, `Can't find ${req.originalUrl} on this server!`));
+});
+
+// Centralized Error Handling Middleware (MUST BE LAST)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

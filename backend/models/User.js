@@ -56,10 +56,68 @@ User.findById = async (id) => {
         throw error;
     }
 };
+ 
+
+// Function to get only the hashed password for a user by ID
+User.getHashedPasswordById = async (id) => {
+    const query = `SELECT password FROM users WHERE id = ?`;
+    try {
+        const [rows] = await db.query(query, [id]);
+        return rows[0] ? rows[0].password : null; // Return the password string or null
+    } catch (error) {
+        console.error('Error fetching hashed password by ID:', error.message);
+        throw error;
+    }
+};
+
 
 // Function to compare a plain password with a hashed password
 User.comparePassword = async (plainPassword, hashedPassword) => {
     return await bcrypt.compare(plainPassword, hashedPassword);
 };
+
+
+
+// Function to update user profile (name, address)
+User.updateProfile = async (id, name, address) => {
+    const query = `
+        UPDATE users
+        SET name = ?, address = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `;
+    const values = [name, address, id];
+    try {
+        const [result] = await db.query(query, values);
+        if (result.affectedRows === 0) {
+            return null; // No user found with that ID or no changes
+        }
+        // Fetch the updated user to return fresh data (excluding password)
+        const updatedUser = await User.findById(id);
+        return { id: updatedUser.id, name: updatedUser.name, email: updatedUser.email, address: updatedUser.address, role: updatedUser.role };
+    } catch (error) {
+        console.error('Error updating user profile:', error.message);
+        throw error;
+    }
+};
+
+// Function to update user password
+User.updatePassword = async (id, newPassword) => {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const query = `
+        UPDATE users
+        SET password = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `;
+    const values = [hashedPassword, id];
+    try {
+        const [result] = await db.query(query, values);
+        return result.affectedRows > 0; // True if updated, false otherwise
+    } catch (error) {
+        console.error('Error updating user password:', error.message);
+        throw error;
+    }
+};
+
+
 
 module.exports = User;
