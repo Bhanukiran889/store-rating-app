@@ -1,8 +1,8 @@
 // frontend/src/App.jsx
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-
+import './index.css'; // Ensure Tailwind CSS is imported
 // Import your page components
 import Register from './pages/Register';
 import Login from './pages/Login';
