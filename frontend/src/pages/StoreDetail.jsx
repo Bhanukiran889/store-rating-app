@@ -322,6 +322,7 @@ const StoreDetail = () => {
                             </li>
                         ))}
                     </ul>
+                    
                 ) : (
                     <p className="text-slate-600 dark:text-slate-400">No reviews yet for this shop.</p>
                 )}
