@@ -14,7 +14,7 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    const API_BASE_URL = 'http://0.0.0.0:5000'; // Your deployed backend URL
+    const API_BASE_URL = 'https://store-rating-app-mysqlhost.up.railway.app'; // Your deployed backend URL
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
