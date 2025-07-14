@@ -25,11 +25,17 @@ const Login = () => {
         setMessage('');
         setError('');
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
-            login(response.data.user, response.data.token); // Update AuthContext
-            setMessage(response.data.message);
-            navigate('/dashboard'); // Redirect to dashboard on successful login
-        } catch (err) {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData,{
+                headers:{
+                    'content-Type': 'application/json',
+                },
+            }
+        );
+        login(response.data.user, response.data.token); // Update AuthContext
+        setMessage(response.data.message); navigate('/dashboard'); 
+    } catch (err) {
+           
+             // Redirect to dashboard on successful login
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
             console.error('Login error:', err);
         }

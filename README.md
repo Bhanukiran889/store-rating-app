@@ -161,3 +161,6 @@ All API endpoints are prefixed with /api.
 * Error Responses (400 Bad Request):
     * {"message": "Please enter all fields."}
     * {"message": "Invalid credentials."}
+
+
+

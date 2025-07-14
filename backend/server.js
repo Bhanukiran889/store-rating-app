@@ -19,7 +19,14 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://store-rating-6j49s2564-bhanukiran-reddys-projects.vercel.app/'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
+
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
