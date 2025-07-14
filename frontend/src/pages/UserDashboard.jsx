@@ -1,133 +1,77 @@
-// frontend/src/pages/UserDashboard.jsx
+// frontend/src/pages/StoreListings.jsx
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import api from '../utils/api'; // Using shared axios instance with baseURL
 
-const UserDashboard = () => {
-    const { user, token } = useAuth();
-    const [myStores, setMyStores] = useState([]);
-    const [myRatings, setMyRatings] = useState([]);
-    const [loadingStores, setLoadingStores] = useState(false);
-    const [loadingRatings, setLoadingRatings] = useState(false);
-    const [errorStores, setErrorStores] = useState('');
-    const [errorRatings, setErrorRatings] = useState('');
-
-    const API_BASE_URL = '[https://store-rating-app-mysqlhost.up.railway.app](https://store-rating-app-mysqlhost.up.railway.app)';
+const StoreListings = () => {
+    const [stores, setStores] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        if (user && token) {
-            // Fetch user's own stores if they are a Store Owner
-            if (user.role === 'Store Owner') {
-                setLoadingStores(true);
-                axios.get(`${API_BASE_URL}/api/stores`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
-                .then(response => {
-                    const ownedStores = response.data.stores.filter(store => store.owner_id === user.id);
-                    setMyStores(ownedStores);
-                    setLoadingStores(false);
-                })
-                .catch(err => {
-                    setErrorStores('Failed to fetch your shops.');
-                    setLoadingStores(false);
-                    console.error('Error fetching stores:', err);
-                });
+        const fetchStores = async () => {
+            try {
+                const response = await api.get('/api/stores/with-ratings');
+                setStores(response.data.stores || []);
+            } catch (err) {
+                setError('Failed to fetch shops.');
+                console.error('Error fetching stores:', err);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            // Fetch user's submitted ratings
-            setLoadingRatings(true);
-            // Note: A dedicated backend endpoint for user-specific ratings would be more efficient
-            axios.get(`${API_BASE_URL}/api/ratings`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            .then(response => {
-                const userRatings = response.data.ratings ? response.data.ratings.filter(rating => rating.user_id === user.id) : [];
-                setMyRatings(userRatings);
-                setLoadingRatings(false);
-            })
-            .catch(err => {
-                setErrorRatings('Failed to fetch your ratings.');
-                setLoadingRatings(false);
-                console.error('Error fetching ratings:', err);
-            });
-        }
-    }, [user, token]);
+        fetchStores();
+    }, []);
 
-    if (!user) {
+    if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <p className="text-slate-700 dark:text-slate-300 text-lg">Please log in to view your dashboard.</p>
+            <div className="container mx-auto px-4 py-8">
+                <p className="text-slate-700 dark:text-slate-300">Loading shops...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <p className="text-red-600 dark:text-red-400">{error}</p>
             </div>
         );
     }
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-8">Welcome, {user.name}!</h2>
-            <p className="text-slate-700 dark:text-slate-300 mb-6">This is your personalized dashboard. Here you can view your profile details, manage your registered shops (if you are a store owner), and review the ratings you've submitted.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-8">All Shops</h2>
+            <p className="text-slate-700 dark:text-slate-300 mb-6">
+                Explore a list of all registered shops. Click on any shop to view its details, read reviews, and submit your own rating.
+            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* My Profile Card */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
-                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">My Profile</h3>
-                    <p className="text-slate-700 dark:text-slate-300 mb-1"><span className="font-medium">Email:</span> {user.email}</p>
-                    <p className="text-slate-700 dark:text-slate-300 mb-1"><span className="font-medium">Address:</span> {user.address}</p>
-                    <p className="text-slate-700 dark:text-slate-300"><span className="font-medium">Role:</span> {user.role}</p>
-                </div>
-
-                {/* My Stores Card (Conditional for Store Owners) */}
-                {user.role === 'Store Owner' && (
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
-                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">My Shops</h3>
-                        {loadingStores ? (
-                            <p className="text-slate-600 dark:text-slate-400">Loading your shops...</p>
-                        ) : errorStores ? (
-                            <p className="text-red-600 dark:text-red-400">{errorStores}</p>
-                        ) : myStores.length > 0 ? (
-                            <ul className="space-y-2">
-                                {myStores.map(store => (
-                                    <li key={store.id} className="text-slate-700 dark:text-slate-300">
-                                        <Link to={`/stores/${store.id}`} className="text-sky-600 hover:underline dark:text-sky-400">
-                                            {store.name}
-                                        </Link> ({store.address})
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-slate-600 dark:text-slate-400">You haven't registered any shops yet.</p>
-                        )}
-                        <button className="mt-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors duration-200">
-                            Register New Shop
-                        </button>
-                    </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {stores.length > 0 ? (
+                    stores.map((store) => (
+                        <Link to={`/stores/${store.id}`} key={store.id} className="block group">
+                            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md group-hover:shadow-xl transition-shadow duration-300 border border-slate-200 dark:border-slate-700">
+                                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors duration-200">
+                                    {store.name}
+                                </h3>
+                                <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">{store.address}</p>
+                                <p className="text-slate-700 dark:text-slate-300">Contact: {store.contact_number}</p>
+                                <div className="mt-3 text-slate-800 dark:text-slate-200 font-medium text-lg flex items-center">
+                                    Average Rating: {store.average_rating ? parseFloat(store.average_rating).toFixed(2) : 'N/A'}
+                                    <span className="ml-1 text-amber-500">⭐</span>
+                                </div>
+                            </div>
+                        </Link>
+                    ))
+                ) : (
+                    <p className="text-slate-600 dark:text-slate-400 col-span-full text-center py-12">
+                        No shops found. Be the first to register one!
+                    </p>
                 )}
-
-                {/* My Ratings Card */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
-                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">My Submitted Ratings</h3>
-                    {loadingRatings ? (
-                        <p className="text-slate-600 dark:text-slate-400">Loading your ratings...</p>
-                    ) : errorRatings ? (
-                        <p className="text-red-600 dark:text-red-400">{errorRatings}</p>
-                    ) : myRatings.length > 0 ? (
-                        <ul className="space-y-2">
-                            {myRatings.map(rating => (
-                                <li key={rating.id} className="text-slate-700 dark:text-slate-300">
-                                    Rating for <Link to={`/stores/${rating.store_id}`} className="text-sky-600 hover:underline dark:text-sky-400">Store ID {rating.store_id}</Link>: {rating.rating} ⭐ - "{rating.comment}"
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-slate-600 dark:text-slate-400">You haven't submitted any ratings yet.</p>
-                    )}
-                    <Link to="/stores" className="mt-4 inline-block text-sky-600 hover:underline dark:text-sky-400 transition-colors duration-200">
-                        Find shops to rate
-                    </Link>
-                </div>
             </div>
         </div>
     );
 };
 
-export default UserDashboard;
+export default StoreListings;
