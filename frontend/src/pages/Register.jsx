@@ -1,7 +1,8 @@
 // frontend/src/pages/Register.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
+import api from '../utils/api'; // Import the API instance
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -26,7 +27,8 @@ const Register = () => {
         setMessage('');
         setError('');
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/auth/register`, formData);
+            
+const response = await api.post('/api/auth/login', formData);;
             setMessage(response.data.message);
             navigate('/login'); // Redirect to login after successful registration
         } catch (err) {
