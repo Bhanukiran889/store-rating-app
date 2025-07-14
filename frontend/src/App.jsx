@@ -9,7 +9,8 @@ import Login from "./pages/Login";
 import UserDashboard from "./pages/UserDashboard";
 import RatingSubmission from './pages/RatingSubmission'; 
 import StoreListings from "./pages/StoreListings";
-import StoreDetail from "./pages/StoreDetail"; // Renamed from RatingSubmission
+import RegisterShop from "./pages/RegisterShop";
+import StoreDetail from "./pages/StoreDetail"; 
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
@@ -158,10 +159,17 @@ const App = () => {
             }
           />
           <Route
-            path="/register-shop"
+            path="/submit-rating"
             element={
               <ProtectedRoute>
                 <RatingSubmission />
+              </ProtectedRoute>
+            }
+          /><Route
+            path="/register-shop"
+            element={
+              <ProtectedRoute>
+                <RegisterShop  />
               </ProtectedRoute>
             }
           />

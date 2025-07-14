@@ -139,25 +139,19 @@ router.get('/store/:storeId/average', async (req, res) => {
 // @route   GET /api/ratings/my
 // @desc    Get all ratings submitted by the authenticated user
 // @access  Private
+// routes/storeRoutes.js
 router.get('/my', protect, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const query = `
-            SELECT r.id, r.user_id, u.name AS user_name, r.store_id, s.name AS store_name,
-                   r.rating, r.comment, r.created_at, r.updated_at
-            FROM ratings r
-            JOIN users u ON r.user_id = u.id
-            JOIN stores s ON r.store_id = s.id
-            WHERE r.user_id = ?
-            ORDER BY r.created_at DESC
-        `;
-        const [rows] = await require('../config/db').query(query, [userId]);
-        res.status(200).json({ ratings: rows });
-    } catch (error) {
-        console.error('Error fetching user ratings:', error.message);
-        res.status(500).json({ message: 'Server error fetching user ratings.' });
-    }
+  try {
+    const userId = req.user.id;
+    const query = `SELECT * FROM stores WHERE owner_id = ?`;
+    const [rows] = await require('../config/db').query(query, [userId]);
+    res.status(200).json({ stores: rows });
+  } catch (err) {
+    console.error('Error fetching user stores:', err.message);
+    res.status(500).json({ message: 'Server error fetching your stores.' });
+  }
 });
+
 
 
 // @route   DELETE /api/ratings/:id
