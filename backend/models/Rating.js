@@ -114,6 +114,25 @@ Rating.getAverageByStoreId = async (store_id) => {
     }
 };
 
+// Get all ratings submitted by a specific user
+Rating.findByUserId = async (user_id) => {
+    const query = `
+        SELECT r.id, r.user_id, u.name AS user_name, r.store_id, s.name AS store_name,
+               r.rating, r.comment, r.created_at, r.updated_at
+        FROM ratings r
+        JOIN users u ON r.user_id = u.id
+        JOIN stores s ON r.store_id = s.id
+        WHERE r.user_id = ?
+        ORDER BY r.created_at DESC
+    `;
+    try {
+        const [rows] = await db.query(query, [user_id]);
+        return rows;
+    } catch (error) {
+        console.error('Error fetching ratings by user ID:', error.message);
+        throw error;
+    }
+};
 
 
 // Delete a rating

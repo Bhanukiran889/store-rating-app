@@ -16,6 +16,8 @@ const UserDashboard = () => {
   const API_BASE_URL = "https://store-rating-app-mysqlhost.up.railway.app";
 
   useEffect(() => {
+    console.log("User:", user.id);
+    console.log("Token:", token);
     if (!user || !token) return;
 
     if (user.role === "Store Owner") {
@@ -25,8 +27,8 @@ const UserDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
-          const stores = Array.isArray(response.data.stores)
-            ? response.data.stores
+          const stores = Array.isArray(response.data)
+            ? response.data
             : [];
           const ownedStores = stores.filter(
             (store) => store.owner_id === user.id

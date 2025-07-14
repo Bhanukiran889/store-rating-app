@@ -7,7 +7,7 @@ import "./index.css"; // Ensure Tailwind CSS is imported
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import UserDashboard from "./pages/UserDashboard";
-import RatingSubmission from './pages/RatingSubmission'; 
+// import RatingSubmission from './pages/RatingSubmission'; 
 import StoreListings from "./pages/StoreListings";
 import RegisterShop from "./pages/RegisterShop";
 import StoreDetail from "./pages/StoreDetail"; 
@@ -159,13 +159,6 @@ const App = () => {
             }
           />
           <Route
-            path="/submit-rating"
-            element={
-              <ProtectedRoute>
-                <RatingSubmission />
-              </ProtectedRoute>
-            }
-          /><Route
             path="/register-shop"
             element={
               <ProtectedRoute>
