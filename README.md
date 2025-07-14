@@ -1,38 +1,44 @@
-# Roxiler Systems Store Rating Application (Backend)
+# Roxiler Systems Store Rating Application
 
-## Project Overview
+This is a full-stack web application for rating stores, developed using Node.js, Express, MySQL (for the backend), and React.js (for the frontend). It supports user registration/login, store browsing, rating submission, updating, deletion, and average rating charts via Chart.js.
 
-This is the backend component of the Roxiler Systems Store Rating Application. It's built with Node.js and Express.js, using MySQL as the database. The backend is responsible for handling all business logic, data storage, and API endpoints, starting with user authentication and authorization.
+---
+- 📘 Live App: [store_rating-app](https://store-rating-app-kappa.vercel.app/)
 
-## Technologies Used (Backend)
+## 🔧 Technologies Used
 
-* Node.js
-* Express.js
-* MySQL Database
-* `mysql2` (MySQL client for Node.js)
-* `dotenv` (for environment variables)
-* `cors` (for Cross-Origin Resource Sharing)
-* `body-parser` (for parsing request bodies)
-* `bcryptjs` (for password hashing)
-* `jsonwebtoken` (for JWT authentication)
-* `uuid` (for generating UUIDs)
-* `nodemon` (development utility)
+### Backend
+- Node.js
+- Express.js
+- MySQL
+- JWT (jsonwebtoken)
+- bcryptjs
+- dotenv
+- cors
+- body-parser
+- uuid
+- nodemon
 
-## Setup and Local Development (Backend)
+### Frontend
+- React 18+
+- Tailwind CSS (dark mode enabled)
+- Axios
+- Chart.js
+- React Router DOM
+- Context API
+- JWT-based Auth
+- PostCSS & Autoprefixer
 
-Follow these steps to get the backend up and running on your local machine.
+---
+
+## 📁 Backend Setup – Roxiler Store API
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-* **Node.js**: Version 14 or higher is recommended.
-* **npm**: Node Package Manager, which comes with Node.js.
-* **MySQL Server**: A running instance of MySQL database.
+- Node.js v14+ and npm
+- MySQL Server
 
 ### 1. Project Initialization
-
-If you're starting from scratch, create your project structure:
 
 ```bash
 mkdir store-rating-app
@@ -41,126 +47,253 @@ mkdir backend
 cd backend
 npm init -y
 ```
-## 3. Database Setup
-Ensure your MySQL server is running.
 
-### a. Create the Database
-Log in to your MySQL client (e.g., mysql -u root -p) and create the database:
+### 2. Install Dependencies
 
-```SQL
+```bash
+npm install express mysql2 dotenv cors body-parser bcryptjs jsonwebtoken uuid
+npm install --save-dev nodemon
+```
+
+### 3. Database Setup
+
+Make sure your MySQL server is running.
+
+#### a. Create the Database
+
+```sql
 CREATE DATABASE roxiler_db;
 ```
 
+#### b. Configure Environment Variables
 
-### b. Configure Environment Variables
-Create a .env file in the backend directory (backend/.env) and add your database and JWT configuration. Replace placeholder values with your actual MySQL credentials and a strong secret key.
+Create a `.env` file in the `backend` folder:
 
 ```bash
 # backend/.env
 PORT=5000
 
-DB_USER=root # Your MySQL username
+DB_USER=root
 DB_HOST=localhost
 DB_DATABASE=roxiler_db
-DB_PASSWORD=your_mysql_password # Your MySQL password
+DB_PASSWORD=your_mysql_password
 DB_PORT=3306
 
 JWT_SECRET=your_very_strong_random_jwt_secret_key_here
 JWT_EXPIRES_IN=1d
 ```
 
-## 4. Run Database Migrations
-This step will create the necessary tables (users, stores, ratings) in your roxiler_db database.
+### 4. Run Database Migrations
 
 ```bash
-
-npm run 001_inital_schema
+npm run 001_initial_schema
 ```
-You should see output confirming successful execution of 001_initial_schema.sql.
 
-## 5. Start the Backend Server
-Once all dependencies are installed and the database is migrated, you can start the backend server in development mode:
+This will create required tables: `users`, `stores`, `ratings`.
 
-```Bash
+### 5. Start the Backend Server
 
+```bash
 npm run dev
 ```
 
-The server will run on http://localhost:5000 (or the PORT specified in your .env file). You should see "Connected to the MySQL database!" in your console.
+Server will start on: [http://localhost:5000](http://localhost:5000)
 
-# API Documentation (Current Endpoints)
-All API endpoints are prefixed with /api.
+---
 
-## Authentication Endpoints
-### 1. Register User
-- URL: /api/auth/register
-- Method: POST
-- Access: Public
-- Description: Registers a new user account.
-* Request Body (JSON): 
-    ```JSON
+## 📚 API Documentation
 
-    {
-        "name": "John Doe",
-        "email": "john.doe@example.com",
-        "password": "StrongPassword123",
-        "address": "123 Main St, Anytown",
-        "role": "Normal User"
-    }
-    ``` 
-    * role can be "System Administrator", "Normal User", or "Store Owner".
-* Success Response (201 Created):
-    ``` json
-    {
-        "message": "User registered successfully",
-        "token": "eyJhbGciOiJIUzI1Ni...",
-        "user": {
-            "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-            "name": "John Doe",
-            "email": "john.doe@example.com",
-            "role": "Normal User"
-        }
-    }
-    ```
+All endpoints are prefixed with `/api`.
 
-* Error Responses (400 Bad Request):
+### 🔐 Authentication
 
-    * {"message": "Please enter all required fields."}
-    * {"message": "Invalid user role."}
-    * {"message": "User with this email already exists."}
+#### 1. Register User
 
-## 2. Login User
-* URL: /api/auth/login
-* Method: POST
-* Access: Public
-* Description: Authenticates a user and returns a JWT token.
-* Request Body (JSON):
-    ```JSON
+- **POST** `/api/auth/register`
 
-    {
-        "email": "john.doe@example.com",
-        "password": "StrongPassword123"
-    }
-    ```
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "Password123",
+  "address": "123 Main St",
+  "role": "Normal User"
+}
+```
 
-* Success Response (200 OK):
+- Roles: `"System Administrator"`, `"Normal User"`, `"Store Owner"`
 
-    ```JSON
+**Success Response:**
 
-    {
-        "message": "Logged in successfully",
-        "token": "eyJhbGciOiJIUzI1Ni...",
-        "user": {
-            "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-            "name": "John Doe",
-            "email": "john.doe@example.com",
-            "role": "Normal User"
-        }
-    }
-    ```
-* Error Responses (400 Bad Request):
-    * {"message": "Please enter all fields."}
-    * {"message": "Invalid credentials."}
+```json
+{
+  "message": "User registered successfully",
+  "token": "...",
+  "user": {
+    "id": "...",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "Normal User"
+  }
+}
+```
 
+#### 2. Login User
 
+- **POST** `/api/auth/login`
 
+```json
+{
+  "email": "john@example.com",
+  "password": "Password123"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "Logged in successfully",
+  "token": "...",
+  "user": {
+    "id": "...",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "Normal User"
+  }
+}
+```
+
+---
+
+## 🎨 Frontend Setup – Store Rating System
+
+### 1. Clone the Frontend Repo
+
+```bash
+git clone https://github.com/your-username/store-rating-frontend.git
+cd store-rating-frontend
+```
+
+### 2. Install Frontend Dependencies
+
+```bash
+npm install
+```
+
+### 3. Environment Variables
+
+Create a `.env` file:
+
+```env
+REACT_APP_API_BASE_URL=http://localhost:5000
+```
+
+### 4. Start Development Server
+
+```bash
+npm start
+```
+
+App will be available at: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📁 Project Structure (Frontend)
+
+```
+src/
+├── components/       # Reusable UI
+├── context/          # Auth context
+├── pages/            # Page components (Home, Register, Login, StoreDetail)
+├── utils/            # Axios instance
+├── App.js            # Routes
+└── index.js          # Entry point
+```
+
+---
+
+## 📦 API Integration in Frontend
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/auth/register` | Register user |
+| `POST /api/auth/login` | Login user |
+| `GET /api/stores/:id` | Fetch single store |
+| `GET /api/ratings/store/:storeId` | Ratings for store |
+| `GET /api/ratings/store/:storeId/average` | Average rating |
+| `POST /api/ratings` | Submit rating |
+| `PUT /api/ratings/:id` | Update rating |
+| `DELETE /api/ratings/:id` | Delete rating |
+
+---
+
+## 📊 Charts (Chart.js)
+
+Chart.js is used to render rating distribution.
+
+Install Chart.js if not already:
+
+```bash
+npm install chart.js
+```
+
+Check:
+- Canvas reference is valid.
+- Chart is being properly destroyed before re-creating.
+- `chart.js/auto` is imported.
+
+---
+
+## 🔐 Auth Context (Frontend)
+
+- Uses React Context API.
+- Stores user + JWT after login/registration.
+- Sends JWT in Axios headers.
+
+---
+
+## 🌙 Dark Mode
+
+Tailwind dark mode is configured via class strategy.
+
+```js
+// tailwind.config.js
+darkMode: 'class'
+```
+
+Switch OS theme or add `class="dark"` to `html`.
+
+---
+
+## 🛠️ Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Chart not rendering | Ensure Chart.js is installed and canvas ref is valid |
+| 404 on API | Verify backend is running and route exists |
+| CORS Error | Confirm backend allows `http://localhost:3000` |
+| Auth token not sent | Ensure token is attached via Axios interceptor |
+
+---
+
+## 📖 Documentation Repositories
+
+For additional docs and usage examples:
+
+- 🔗 API Test Collection: [store_app_API_test](https://github.com/Bhanukiran889/store_app_API_test)
+- 📘 Rating Guide: [store_rating_guid](https://github.com/Bhanukiran889/store_rating_guid)
+
+---
+
+## 🤝 Contributing
+
+PRs are welcome! Please fork the repo and open a pull request.
+
+---
+
+## 📝 License
+
+Licensed under the [MIT License](LICENSE).
+
+---
