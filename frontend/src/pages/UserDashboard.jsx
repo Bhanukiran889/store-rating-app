@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -17,39 +16,43 @@ const UserDashboard = () => {
     const API_BASE_URL = 'https://store-rating-app-mysqlhost.up.railway.app';
 
     useEffect(() => {
-        if (user && token) {
-            if (user.role === 'Store Owner') {
-                setLoadingStores(true);
-                axios.get(`${API_BASE_URL}/api/stores`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
-                .then(response => {
-                    const ownedStores = response.data.stores.filter(store => store.owner_id === user.id);
-                    setMyStores(ownedStores);
-                    setLoadingStores(false);
-                })
-                .catch(err => {
-                    setErrorStores('Failed to fetch your shops.');
-                    setLoadingStores(false);
-                    console.error('Error fetching stores:', err);
-                });
-            }
+        if (!user || !token) return;
 
-            setLoadingRatings(true);
-            axios.get(`${API_BASE_URL}/api/ratings`, {
+        // Fetch user's stores if role is Store Owner
+        if (user.role === 'Store Owner') {
+            setLoadingStores(true);
+            axios.get(`${API_BASE_URL}/api/stores`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             .then(response => {
-                const userRatings = response.data.ratings ? response.data.ratings.filter(rating => rating.user_id === user.id) : [];
-                setMyRatings(userRatings);
-                setLoadingRatings(false);
+                const stores = Array.isArray(response.data.stores) ? response.data.stores : [];
+                const ownedStores = stores.filter(store => store.owner_id === user.id);
+                setMyStores(ownedStores);
+                setLoadingStores(false);
             })
             .catch(err => {
-                setErrorRatings('Failed to fetch your ratings.');
-                setLoadingRatings(false);
-                console.error('Error fetching ratings:', err);
+                setErrorStores('Failed to fetch your shops.');
+                setLoadingStores(false);
+                console.error('Error fetching stores:', err);
             });
         }
+
+        // Fetch ratings submitted by this user
+        setLoadingRatings(true);
+        axios.get(`${API_BASE_URL}/api/ratings/my`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(response => {
+            const ratings = Array.isArray(response.data.ratings) ? response.data.ratings : [];
+            setMyRatings(ratings);
+            setLoadingRatings(false);
+        })
+        .catch(err => {
+            setErrorRatings('Failed to fetch your ratings.');
+            setLoadingRatings(false);
+            console.error('Error fetching ratings:', err);
+        });
+
     }, [user, token]);
 
     if (!user) {
@@ -74,7 +77,7 @@ const UserDashboard = () => {
                     <p className="text-slate-700 dark:text-slate-300"><span className="font-medium">Role:</span> {user.role}</p>
                 </div>
 
-                {/* My Stores Card */}
+                {/* My Stores Card (Only for Store Owners) */}
                 {user.role === 'Store Owner' && (
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
                         <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">My Shops</h3>
@@ -115,7 +118,10 @@ const UserDashboard = () => {
                         <ul className="space-y-2">
                             {myRatings.map(rating => (
                                 <li key={rating.id} className="text-slate-700 dark:text-slate-300">
-                                    Rating for <Link to={`/stores/${rating.store_id}`} className="text-sky-600 hover:underline dark:text-sky-400">Store ID {rating.store_id}</Link>: {rating.rating} ⭐ - "{rating.comment}"
+                                    Rating for{' '}
+                                    <Link to={`/stores/${rating.store_id}`} className="text-sky-600 hover:underline dark:text-sky-400">
+                                        {rating.store_name || 'Store'}
+                                    </Link>: {rating.rating} ⭐ - "{rating.comment}"
                                 </li>
                             ))}
                         </ul>
