@@ -63,6 +63,26 @@ router.get('/store/:storeId', async (req, res) => {
         res.status(500).json({ message: 'Server error fetching ratings.' });
     }
 });
+// ✅ Place this BEFORE the router.get('/:id') route
+router.get('/my', protect, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const query = `
+      SELECT r.id, r.user_id, u.name AS user_name, r.store_id, s.name AS store_name,
+             r.rating, r.comment, r.created_at, r.updated_at
+      FROM ratings r
+      JOIN users u ON r.user_id = u.id
+      JOIN stores s ON r.store_id = s.id
+      WHERE r.user_id = ?
+      ORDER BY r.created_at DESC
+    `;
+    const [rows] = await require('../config/db').query(query, [userId]);
+    res.status(200).json({ ratings: rows });
+  } catch (error) {
+    console.error('Error fetching user ratings:', error.message);
+    res.status(500).json({ message: 'Server error fetching your ratings.' });
+  }
+});
 
 // @route   GET /api/ratings/:id
 // @desc    Get a single rating by its ID
@@ -135,19 +155,7 @@ router.get('/store/:storeId/average', async (req, res) => {
         res.status(500).json({ message: 'Server error fetching average rating.' });
     }
 });
-// @route   GET /api/ratings/my
-// @desc    Get all ratings submitted by the authenticated user
-// @access  Private
-router.get('/my', protect, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const ratings = await Rating.findByUserId(userId);
-        res.status(200).json({ ratings });
-    } catch (err) {
-        console.error('Error fetching user ratings:', err.message);
-        res.status(500).json({ message: 'Server error fetching your ratings.' });
-    }
-});
+
 
 
 // @route   DELETE /api/ratings/:id
