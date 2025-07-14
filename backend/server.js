@@ -40,10 +40,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
-//  Handle preflight requests
-// app.options('*', cors());
-
 // Parse JSON bodies
 app.use(bodyParser.json());
 
@@ -69,7 +65,7 @@ app.use(errorHandler);
 
 //  Start server
 const PORT = process.env.PORT || 5000;
-const HOST = '0.0.0.0'; // Ensure it works on Railway or other cloud platforms
+const HOST = '0.0.0.0'; 
 
 app.listen(PORT, HOST, () => {
   console.log(` Server running at http://${HOST}:${PORT}`);

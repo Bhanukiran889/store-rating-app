@@ -63,7 +63,6 @@ router.get('/store/:storeId', async (req, res) => {
         res.status(500).json({ message: 'Server error fetching ratings.' });
     }
 });
-// ✅ Place this BEFORE the router.get('/:id') route
 router.get('/my', protect, async (req, res) => {
   const userId = req.user.id;
   try {
