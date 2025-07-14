@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../utils/api'; // Reusable Axios instance
+import api from '../utils/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +26,7 @@ const Register = () => {
     try {
       const response = await api.post('/api/auth/register', formData);
       setMessage(response.data.message || 'Registration successful!');
-      navigate('/login'); // Redirect after success
+      navigate('/login');
     } catch (err) {
       console.error('Registration error:', err);
       setError(
@@ -50,7 +50,7 @@ const Register = () => {
               type="text"
               required
               placeholder="Full Name"
-              className="input-style"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-white bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               value={formData.name}
               onChange={handleChange}
             />
@@ -64,7 +64,7 @@ const Register = () => {
               autoComplete="email"
               required
               placeholder="Email address"
-              className="input-style"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-white bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               value={formData.email}
               onChange={handleChange}
             />
@@ -78,7 +78,7 @@ const Register = () => {
               autoComplete="new-password"
               required
               placeholder="Password"
-              className="input-style"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-white bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               value={formData.password}
               onChange={handleChange}
             />
@@ -91,7 +91,7 @@ const Register = () => {
               type="text"
               required
               placeholder="Address"
-              className="input-style"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-white bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               value={formData.address}
               onChange={handleChange}
             />
@@ -102,12 +102,13 @@ const Register = () => {
               id="role"
               name="role"
               required
-              className="input-style"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-white bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               value={formData.role}
               onChange={handleChange}
             >
               <option value="Normal User">Normal User</option>
               <option value="Store Owner">Store Owner</option>
+              <option value="System Administrator">System Administrator</option>
             </select>
           </div>
 

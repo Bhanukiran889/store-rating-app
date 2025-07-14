@@ -23,6 +23,8 @@ const StoreDetail = () => {
   const chartInstance = useRef(null);
 
   const fetchStoreData = async () => {
+    console.log("ratings:", ratings);
+    console.log("sortOrder:", sortOrder);
     setLoading(true);
     setError("");
     try {

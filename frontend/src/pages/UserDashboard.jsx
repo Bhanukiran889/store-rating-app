@@ -16,8 +16,6 @@ const UserDashboard = () => {
   const API_BASE_URL = "https://store-rating-app-mysqlhost.up.railway.app";
 
   useEffect(() => {
-    console.log("User:", user.id);
-    console.log("Token:", token);
     if (!user || !token) return;
 
     if (user.role === "Store Owner") {
