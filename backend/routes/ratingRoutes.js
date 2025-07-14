@@ -118,6 +118,48 @@ router.put('/:id', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/ratings/store/:storeId/average
+// @desc    Get average rating and total ratings for a specific store
+// @access  Public
+router.get('/store/:storeId/average', async (req, res) => {
+    try {
+        const result = await Rating.getAverageByStoreId(req.params.storeId);
+
+        // If no ratings yet, default to 0
+        const average_rating = result.average_rating || 0;
+        const total_ratings = result.total_ratings || 0;
+
+        res.status(200).json({ average_rating, total_ratings });
+    } catch (error) {
+        console.error('Error fetching average rating:', error.message);
+        res.status(500).json({ message: 'Server error fetching average rating.' });
+    }
+});
+// Add in ratingRoutes.js
+// @route   GET /api/ratings/my
+// @desc    Get all ratings submitted by the authenticated user
+// @access  Private
+router.get('/my', protect, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const query = `
+            SELECT r.id, r.user_id, u.name AS user_name, r.store_id, s.name AS store_name,
+                   r.rating, r.comment, r.created_at, r.updated_at
+            FROM ratings r
+            JOIN users u ON r.user_id = u.id
+            JOIN stores s ON r.store_id = s.id
+            WHERE r.user_id = ?
+            ORDER BY r.created_at DESC
+        `;
+        const [rows] = await require('../config/db').query(query, [userId]);
+        res.status(200).json({ ratings: rows });
+    } catch (error) {
+        console.error('Error fetching user ratings:', error.message);
+        res.status(500).json({ message: 'Server error fetching user ratings.' });
+    }
+});
+
+
 // @route   DELETE /api/ratings/:id
 // @desc    Delete a rating (only by the user who submitted it or System Administrator)
 // @access  Private (Authenticated User, System Administrator)

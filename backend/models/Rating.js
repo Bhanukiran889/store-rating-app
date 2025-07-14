@@ -96,6 +96,26 @@ Rating.update = async (id, rating, comment) => {
     }
 };
 
+// Get average rating for a specific store
+Rating.getAverageByStoreId = async (store_id) => {
+    const query = `
+        SELECT 
+            ROUND(AVG(rating), 2) AS average_rating,
+            COUNT(*) AS total_ratings
+        FROM ratings
+        WHERE store_id = ?
+    `;
+    try {
+        const [rows] = await db.query(query, [store_id]);
+        return rows[0]; // { average_rating: number | null, total_ratings: number }
+    } catch (error) {
+        console.error('Error calculating average rating:', error.message);
+        throw error;
+    }
+};
+
+
+
 // Delete a rating
 Rating.delete = async (id) => {
     const query = `DELETE FROM ratings WHERE id = ?`;
