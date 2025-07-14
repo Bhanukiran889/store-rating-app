@@ -5,59 +5,72 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const db = require('./config/db');
+
 const authRoutes = require('./routes/authRoutes');
 const storeRoutes = require('./routes/storeRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const errorHandler = require('./middleware/errorHandler');
-const ApiError = require('./utils/ApiError'); // Keep this import for the new 404 handler
 
-// Load environment variables from .env file
+const errorHandler = require('./middleware/errorHandler');
+const ApiError = require('./utils/ApiError');
+
+// Load environment variables
 dotenv.config();
 
 const app = express();
 
-// Middleware
+//  CORS configuration with allowed origins
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://store-rating-app-kappa.vercel.app',
+  'https://store-rating-6j49s2564-bhanukiran-reddys-projects.vercel.app',
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://store-rating-app-kappa.vercel.app',
-    'https://store-rating-6j49s2564-bhanukiran-reddys-projects.vercel.app',
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.options('*', cors()); // Handle preflight
+//  Handle preflight requests
+// app.options('*', cors());
 
+// Parse JSON bodies
 app.use(bodyParser.json());
 
+// Health check route
 app.get('/', (req, res) => {
-    res.send('Roxiler Systems Backend is Running!');
+  res.send('Roxiler Systems Backend is Running!');
 });
 
-// Use authentication routes
+// API routes
 app.use('/api/auth', authRoutes);
-// Use store routes
 app.use('/api/stores', storeRoutes);
-// Use rating routes
 app.use('/api/ratings', ratingRoutes);
-// Use user profile routes
 app.use('/api/users', userRoutes);
-// Use admin routes
 app.use('/api/admin', adminRoutes);
 
-// 404 Not Found Handler (MUST BE AFTER ALL ROUTES)
+// 404 handler (after all routes)
 app.use((req, res, next) => {
-    next(new ApiError(404, `Can't find ${req.originalUrl} on this server!`));
+  next(new ApiError(404, `Can't find ${req.originalUrl} on this server!`));
 });
 
-// Centralized Error Handling Middleware (MUST BE LAST)
+//  Centralized error handler
 app.use(errorHandler);
 
+//  Start server
 const PORT = process.env.PORT || 5000;
-const HOST = '0.0.0.0'; 
+const HOST = '0.0.0.0'; // Ensure it works on Railway or other cloud platforms
 
-app.listen(PORT, HOST, () => { 
-    console.log(`Server running on http://${HOST}:${PORT}`); // Optional: update log message
+app.listen(PORT, HOST, () => {
+  console.log(` Server running at http://${HOST}:${PORT}`);
 });
