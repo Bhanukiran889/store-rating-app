@@ -1,8 +1,8 @@
-// frontend/src/pages/UserDashboard.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const UserDashboard = () => {
     const { user, token } = useAuth();
@@ -12,13 +12,12 @@ const UserDashboard = () => {
     const [loadingRatings, setLoadingRatings] = useState(false);
     const [errorStores, setErrorStores] = useState('');
     const [errorRatings, setErrorRatings] = useState('');
+    const navigate = useNavigate();
 
-    
     const API_BASE_URL = 'https://store-rating-app-mysqlhost.up.railway.app';
 
     useEffect(() => {
         if (user && token) {
-            // Fetch user's own stores if they are a Store Owner
             if (user.role === 'Store Owner') {
                 setLoadingStores(true);
                 axios.get(`${API_BASE_URL}/api/stores`, {
@@ -36,9 +35,7 @@ const UserDashboard = () => {
                 });
             }
 
-            // Fetch user's submitted ratings
             setLoadingRatings(true);
-            // Note: A dedicated backend endpoint for user-specific ratings would be more efficient
             axios.get(`${API_BASE_URL}/api/ratings`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -77,7 +74,7 @@ const UserDashboard = () => {
                     <p className="text-slate-700 dark:text-slate-300"><span className="font-medium">Role:</span> {user.role}</p>
                 </div>
 
-                {/* My Stores Card (Conditional for Store Owners) */}
+                {/* My Stores Card */}
                 {user.role === 'Store Owner' && (
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
                         <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">My Shops</h3>
@@ -98,7 +95,10 @@ const UserDashboard = () => {
                         ) : (
                             <p className="text-slate-600 dark:text-slate-400">You haven't registered any shops yet.</p>
                         )}
-                        <button className="mt-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors duration-200">
+                        <button
+                            onClick={() => navigate('/register-shop')}
+                            className="mt-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors duration-200"
+                        >
                             Register New Shop
                         </button>
                     </div>
