@@ -28,7 +28,7 @@ const Register = () => {
         setError('');
         try {
             
-const response = await api.post('/api/auth/login', formData);;
+const response = await api.post('/api/auth/register', formData);;
             setMessage(response.data.message);
             navigate('/login'); // Redirect to login after successful registration
         } catch (err) {
