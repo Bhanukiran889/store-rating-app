@@ -20,12 +20,15 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://store-rating-app-kappa.vercel.app/stores'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: [
+    'http://localhost:5173',
+    'https://store-rating-app-kappa.vercel.app',
+    'https://store-rating-6j49s2564-bhanukiran-reddys-projects.vercel.app',
+  ],
   credentials: true,
 }));
 
+app.options('*', cors()); // Handle preflight
 
 app.use(bodyParser.json());
 
